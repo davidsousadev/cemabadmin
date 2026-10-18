@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#0d2c7a">
+    <title>CEMAB | Painel Administrativo</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+    <section id="loginView" class="login-wrap">
+        <div class="login-card">
+            <div class="logo-box">C</div>
+            <span class="eyebrow">CENTRO EDUCA MAIS ANNA BERNARDES</span>
+            <h1>Central de Gestão</h1>
+            <p class="muted">Acesse o painel para gerenciar avisos, notificações de falta e a versão do aplicativo.</p>
+            <div class="field">
+                <label for="adminToken">Token Administrativo</label>
+                <input id="adminToken" type="password" autocomplete="current-password" placeholder="Informe seu token">
+            </div>
+            <button class="btn btn-full" id="connectButton">Entrar <span>→</span></button>
+            <div id="loginMessage" class="msg" hidden></div>
+            <p class="muted" style="font-size:11px;margin-top:18px;">
+                O token fica apenas na memória e não é salvo no navegador.
+            </p>
+        </div>
+    </section>
+
+    <div id="dashboard" class="app-shell" hidden>
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-mark">C</div>
+                <div>
+                    <strong>CEMAB <span style="color:#dbe8ff">Admin</span></strong>
+                    <small>GESTÃO ESCOLAR</small>
+                </div>
+            </div>
+            <div class="nav-label">MENU PRINCIPAL</div>
+            <nav class="nav-list">
+                <button class="nav-btn active" data-view="overview">
+                    <span class="ico">◫</span> Visão Geral
+                </button>
+                <button class="nav-btn" data-view="absences">
+                    <span class="ico">◷</span> Notificar Faltas
+                </button>
+                <button class="nav-btn" data-view="custom">
+                    <span class="ico">✉</span> Avisos Personalizados
+                </button>
+                <button class="nav-btn" data-view="version">
+                    <span class="ico">⬆</span> Versão do App
+                </button>
+                <button class="nav-btn" data-view="history">
+                    <span class="ico">▤</span> Histórico
+                </button>
+            </nav>
+            <div class="sidebar-foot">
+                <strong>Centro Educa Mais Anna Bernardes</strong>
+                Notificações e comunicação com as famílias.
+            </div>
+        </aside>
+
+        <div class="main">
+            <header class="topbar">
+                <div class="topbar-title">
+                    <small id="crumb">PAINEL ADMINISTRATIVO</small>
+                    <strong id="topTitle">Visão Geral</strong>
+                </div>
+                <div class="profile">
+                    <span class="online-dot"></span>
+                    <span>Sessão ativa</span>
+                </div>
+            </header>
+
+            <main class="content">
+                <!-- Visão Geral -->
+                <section class="view active" id="view-overview">
+                    <div class="view-heading">
+                        <div>
+                            <span class="eyebrow">ACOMPANHAMENTO</span>
+                            <h1>Visão Geral</h1>
+                            <p>Resumo de presenças e faltas por data.</p>
+                        </div>
+                        <div class="inline-row">
+                            <div class="field" style="margin:0">
+                                <label for="overviewDate">Data de Referência</label>
+                                <input id="overviewDate" type="date">
+                            </div>
+                            <button class="btn btn-light" id="refreshOverview">Atualizar</button>
+                        </div>
+                    </div>
+                    <div class="metrics">
+                        <article class="metric">
+                            <div class="metric-top">
+                                <span class="metric-label">Alunos Ativos</span>
+                                <span class="metric-icon">👥</span>
+                            </div>
+                            <strong class="metric-value" id="mStudents">—</strong>
+                            <span class="metric-foot">Total cadastrado</span>
+                        </article>
+                        <article class="metric">
+                            <div class="metric-top">
+                                <span class="metric-label">Presenças</span>
+                                <span class="metric-icon">✓</span>
+                            </div>
+                            <strong class="metric-value" id="mPresent">—</strong>
+                            <span class="metric-foot">Registros no dia</span>
+                        </article>
+                        <article class="metric">
+                            <div class="metric-top">
+                                <span class="metric-label">Faltas</span>
+                                <span class="metric-icon">◷</span>
+                            </div>
+                            <strong class="metric-value" id="mAbsences">—</strong>
+                            <span class="metric-foot">Sem registro</span>
+                        </article>
+                        <article class="metric">
+                            <div class="metric-top">
+                                <span class="metric-label">Já Notificadas</span>
+                                <span class="metric-icon">🔔</span>
+                            </div>
+                            <strong class="metric-value" id="mSent">—</strong>
+                            <span class="metric-foot">No histórico</span>
+                        </article>
+                    </div>
+                    <div class="grid-two">
+                        <section class="card">
+                            <h2>Cobertura do Dia</h2>
+                            <div class="coverage-line">
+                                <div class="coverage-meta">
+                                    <span>Presenças</span>
+                                    <strong id="coveragePresent">—</strong>
+                                </div>
+                                <div class="progress"><span id="coverageBar"></span></div>
+                            </div>
+                            <div class="coverage-line">
+                                <div class="coverage-meta">
+                                    <span>Ausências</span>
+                                    <strong id="coverageAbsence">—</strong>
+                                </div>
+                                <div class="progress"><span id="absenceBar" style="background:#d12f24"></span></div>
+                            </div>
+                            <div class="notice">
+                                <span class="notice-icon">⚠️</span>
+                                <div>
+                                    <strong>Confirme o relatório antes de enviar</strong>
+                                    <p>Verifique se todos os registros de presença foram importados.</p>
+                                </div>
+                            </div>
+                        </section>
+                        <section class="card">
+                            <h2>Ações Rápidas</h2>
+                            <button class="shortcut" data-jump="absences">
+                                <span class="shortcut-icon">🔔</span>
+                                <div>
+                                    <strong>Notificar Faltas</strong>
+                                    <small>Enviar aviso aos responsáveis</small>
+                                </div>
+                                <span class="arrow">›</span>
+                            </button>
+                            <button class="shortcut" data-jump="custom">
+                                <span class="shortcut-icon">✉️</span>
+                                <div>
+                                    <strong>Aviso Personalizado</strong>
+                                    <small>Comunicado geral ou individual</small>
+                                </div>
+                                <span class="arrow">›</span>
+                            </button>
+                            <button class="shortcut" data-jump="version">
+                                <span class="shortcut-icon">⬆️</span>
+                                <div>
+                                    <strong>Versão do Aplicativo</strong>
+                                    <small>Atualizar link de download</small>
+                                </div>
+                                <span class="arrow">›</span>
+                            </button>
+                        </section>
+                    </div>
+                </section>
+
+                <!-- Demais seções: absences, custom, version, history -->
+                <section class="view" id="view-absences">
+                    <div class="view-heading">
+                        <div>
+                            <span class="eyebrow">NOTIFICAÇÃO DE AUSÊNCIA</span>
+                            <h1>Notificar Faltas</h1>
+                            <p>Identifica alunos sem registro de presença na data escolhida.</p>
+                        </div>
+                    </div>
+                    <section class="card">
+                        <h2>Configuração do Envio</h2>
+                        <div class="form-grid">
+                            <div class="field">
+                                <label for="absenceDate">Data da Falta</label>
+                                <input id="absenceDate" type="date">
+                            </div>
+                            <div class="field">
+                                <label for="absenceTitle">Título</label>
+                                <input id="absenceTitle" maxlength="120" value="Falta Registrada">
+                            </div>
+                            <div class="field span-2">
+                                <label for="absenceMessage">Mensagem</label>
+                                <textarea id="absenceMessage" maxlength="1000">Não identificamos a passagem do aluno pelo leitor facial nesta data. Em caso de divergência, entre em contato com a escola.</textarea>
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <button class="btn btn-light" id="refreshAbsences">Atualizar Resumo</button>
+                            <button class="btn" id="sendAbsences">Enviar Notificações</button>
+                        </div>
+                        <div id="absenceFeedback" class="msg" hidden></div>
+                    </section>
+                </section>
+
+                <section class="view" id="view-custom">
+                    <div class="view-heading">
+                        <div>
+                            <span class="eyebrow">COMUNICAÇÃO</span>
+                            <h1>Aviso Personalizado</h1>
+                            <p>Envie comunicado para todos ou para um aluno específico.</p>
+                        </div>
+                    </div>
+                    <section class="card">
+                        <h2>Redigir Aviso</h2>
+                        <div class="form-grid">
+                            <div class="field">
+                                <label for="customTarget">Destinatários</label>
+                                <select id="customTarget">
+                                    <option value="todos">Todos os alunos ativos</option>
+                                    <option value="aluno">Apenas um aluno</option>
+                                </select>
+                            </div>
+                            <div class="field" id="studentSelectWrap" hidden>
+                                <label for="studentSelect">Aluno</label>
+                                <select id="studentSelect">
+                                    <option value="">Selecione...</option>
+                                </select>
+                            </div>
+                            <div class="field span-2">
+                                <label for="customTitle">Título</label>
+                                <input id="customTitle" maxlength="120" placeholder="Ex.: Reunião de pais">
+                            </div>
+                            <div class="field span-2">
+                                <label for="customBody">Mensagem</label>
+                                <textarea id="customBody" maxlength="1000" placeholder="Escreva sua mensagem..."></textarea>
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <button class="btn" id="sendCustom">Enviar</button>
+                            <button class="btn btn-light" id="clearCustom">Limpar</button>
+                        </div>
+                        <div id="customFeedback" class="msg" hidden></div>
+                    </section>
+                </section>
+
+                <section class="view" id="view-version">
+                    <div class="view-heading">
+                        <div>
+                            <span class="eyebrow">DISTRIBUIÇÃO</span>
+                            <h1>Versão do Aplicativo</h1>
+                            <p>Configure a versão disponível e o link de download.</p>
+                        </div>
+                    </div>
+                    <section class="card">
+                        <h2>Informações da Versão</h2>
+                        <div class="form-grid">
+                            <div class="field">
+                                <label for="appVersion">Versão</label>
+                                <input id="appVersion" placeholder="Ex.: 1.2.0">
+                            </div>
+                            <div class="field">
+                                <label for="downloadUrl">Link de Download</label>
+                                <input id="downloadUrl" type="url" placeholder="https://...">
+                            </div>
+                            <div class="field span-2">
+                                <label for="releaseNotes">Notas da Versão</label>
+                                <textarea id="releaseNotes" placeholder="Melhorias e correções..."></textarea>
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <button class="btn" id="saveVersion">Salvar</button>
+                            <button class="btn btn-light" id="loadVersion">Carregar Atual</button>
+                        </div>
+                        <div id="versionFeedback" class="msg" hidden></div>
+                    </section>
+                </section>
+
+                <section class="view" id="view-history">
+                    <div class="view-heading">
+                        <div>
+                            <span class="eyebrow">REGISTRO</span>
+                            <h1>Histórico de Envios</h1>
+                            <p>Consulte todas as notificações enviadas.</p>
+                        </div>
+                        <button class="btn btn-light" id="refreshHistory">Atualizar</button>
+                    </div>
+                    <section class="card">
+                        <div id="historyTable" class="table-wrap">
+                            <div class="empty">Entre no painel para visualizar o histórico.</div>
+                        </div>
+                    </section>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+</body>
+</html>
