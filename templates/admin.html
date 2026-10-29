@@ -49,6 +49,9 @@
                 <button class="nav-btn" data-view="version">
                     <span class="ico">⬆</span> Versão do App
                 </button>
+                <button class="nav-btn" data-view="students">
+                    <span class="ico">🎓</span> Alunos
+                </button>
                 <button class="nav-btn" data-view="history">
                     <span class="ico">▤</span> Histórico
                 </button>
@@ -283,7 +286,75 @@
                     </section>
                 </section>
 
-                <section class="view" id="view-history">
+                <section class="view" id="view-students">
+                    <div class="view-heading">
+                        <div>
+                            <span class="eyebrow">CADASTRO</span>
+                            <h1>Gestão de Alunos</h1>
+                            <p>Liste, atualize e associe irmãos por família.</p>
+                        </div>
+                        <button class="btn btn-light" id="refreshStudents">Atualizar</button>
+                    </div>
+
+                    <section class="card">
+                        <h2>Alunos Cadastrados</h2>
+                        <div id="studentsTable" class="table-wrap">
+                            <div class="empty">Entre no painel para visualizar os alunos.</div>
+                        </div>
+                    </section>
+
+                    <div class="grid-two">
+                        <section class="card">
+                            <h2>Cadastrar / Atualizar Aluno</h2>
+                            <div class="form-grid">
+                                <div class="field">
+                                    <label for="studentMatricula">Matrícula</label>
+                                    <input id="studentMatricula" maxlength="40" placeholder="Ex.: 12345">
+                                </div>
+                                <div class="field">
+                                    <label for="studentNome">Nome Completo</label>
+                                    <input id="studentNome" maxlength="160" placeholder="Ex.: João da Silva">
+                                </div>
+                                <div class="field">
+                                    <label for="studentAtivo">Ativo</label>
+                                    <select id="studentAtivo">
+                                        <option value="true">Sim</option>
+                                        <option value="false">Não</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label for="studentFamilia">Família (ID)</label>
+                                    <input id="studentFamilia" type="number" placeholder="Ex.: 1 (opcional)">
+                                </div>
+                            </div>
+                            <div class="actions">
+                                <button class="btn" id="saveStudent">Salvar Aluno</button>
+                                <button class="btn btn-light" id="clearStudent">Limpar</button>
+                            </div>
+                            <div id="studentFeedback" class="msg" hidden></div>
+                        </section>
+
+                        <section class="card">
+                            <h2>Associar Irmãos</h2>
+                            <p class="muted">Selecione os alunos que são irmãos e informe (ou deixe em branco para criar) o ID da família.</p>
+                            <div class="field">
+                                <label for="siblingsSelect">Alunos (segure Ctrl para múltiplos)</label>
+                                <select id="siblingsSelect" multiple size="8" style="height:auto"></select>
+                            </div>
+                            <div class="field">
+                                <label for="siblingsFamilia">ID da Família (opcional)</label>
+                                <input id="siblingsFamilia" type="number" placeholder="Deixe vazio para gerar automaticamente">
+                            </div>
+                            <div class="actions">
+                                <button class="btn" id="associateSiblings">Associar Irmãos</button>
+                            </div>
+                            <div id="siblingsFeedback" class="msg" hidden></div>
+                        </section>
+                    </div>
+                </section>
+
+
+<section class="view" id="view-history">
                     <div class="view-heading">
                         <div>
                             <span class="eyebrow">REGISTRO</span>

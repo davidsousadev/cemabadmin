@@ -8,6 +8,7 @@
         overview: 'Visão Geral',
         absences: 'Notificar Faltas',
         custom: 'Avisos Personalizados',
+        students: 'Gestão de Alunos',
         version: 'Versão do Aplicativo',
         history: 'Histórico de Envios'
     };
@@ -67,10 +68,145 @@
             opt.textContent = `${a.nome_completo} (${a.matricula})`;
             sel.appendChild(opt);
         });
+
+        // Tabela de alunos
+        const wrap = $('studentsTable');
+        if (wrap) {
+            if (alunos.length === 0) {
+                wrap.innerHTML = '<div class="empty">Nenhum aluno cadastrado.</div>';
+            } else {
+                wrap.innerHTML = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Matrícula</th>
+                                <th>Nome</th>
+                                <th>Ativo</th>
+                                <th>Família</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${alunos.map(a => `
+                                <tr>
+                                    <td>${a.matricula}</td>
+                                    <td>${a.nome_completo}</td>
+                                    <td>${a.ativo ? 'Sim' : 'Não'}</td>
+                                    <td>${a.familia_id || '—'}</td>
+                                    <td>
+                                        <button class="btn btn-light" data-edit="${a.matricula}">Editar</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                wrap.querySelectorAll('[data-edit]').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const a = alunos.find(x => x.matricula === btn.dataset.edit);
+                        if (!a) return;
+                        $('studentMatricula').value = a.matricula;
+                        $('studentNome').value = a.nome_completo;
+                        $('studentAtivo').value = a.ativo ? 'true' : 'false';
+                        $('studentFamilia').value = a.familia_id || '';
+                    });
+                });
+            }
+        }
+
+        // Select de irmãos
+        const sib = $('siblingsSelect');
+        if (sib) {
+            sib.innerHTML = '';
+            alunos.forEach(a => {
+                const opt = document.createElement('option');
+                opt.value = a.matricula;
+                opt.textContent = `${a.nome_completo} (${a.matricula})${a.familia_id ? ' [Fam. ' + a.familia_id + ']' : ''}`;
+                sib.appendChild(opt);
+            });
+        }
     }
 
     // ==============================================
-    // LOGIN / AUTENTICAÇÃO
+    // GESTÃO DE ALUNOS
+    // ==============================================
+    $('saveStudent').addEventListener('click', async () => {
+        const feedback = $('studentFeedback');
+        hideMsg(feedback);
+        const matricula = $('studentMatricula').value.trim();
+        const nome = $('studentNome').value.trim();
+        if (!matricula || !nome) {
+            return showMsg(feedback, 'Informe matrícula e nome.', true);
+        }
+        const ativo = $('studentAtivo').value === 'true';
+        const familiaRaw = $('studentFamilia').value.trim();
+        const dados = { matricula, nome_completo: nome, ativo };
+        if (familiaRaw) dados.familia_id = parseInt(familiaRaw, 10);
+
+        const btn = $('saveStudent');
+        btn.disabled = true;
+        btn.textContent = 'Salvando...';
+        try {
+            await apiFetch('/api/alunos/atualizar', {
+                method: 'POST',
+                body: JSON.stringify(dados)
+            });
+            showMsg(feedback, '✅ Aluno salvo com sucesso!', false);
+            await carregarListaAlunos();
+        } catch (err) {
+            showMsg(feedback, `Erro: ${err.message}`, true);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Salvar Aluno';
+        }
+    });
+
+    $('clearStudent').addEventListener('click', () => {
+        $('studentMatricula').value = '';
+        $('studentNome').value = '';
+        $('studentAtivo').value = 'true';
+        $('studentFamilia').value = '';
+        hideMsg($('studentFeedback'));
+    });
+
+    $('associateSiblings').addEventListener('click', async () => {
+        const feedback = $('siblingsFeedback');
+        hideMsg(feedback);
+        const select = $('siblingsSelect');
+        const matriculas = Array.from(select.selectedOptions).map(o => o.value);
+        if (matriculas.length < 2) {
+            return showMsg(feedback, 'Selecione ao menos dois alunos.', true);
+        }
+        const familiaRaw = $('siblingsFamilia').value.trim();
+        const corpo = { matriculas };
+        if (familiaRaw) corpo.familia_id = parseInt(familiaRaw, 10);
+
+        const btn = $('associateSiblings');
+        btn.disabled = true;
+        btn.textContent = 'Associando...';
+        try {
+            const res = await apiFetch('/api/alunos/associar-irmaos', {
+                method: 'POST',
+                body: JSON.stringify(corpo)
+            });
+            showMsg(feedback, `✅ Irmãos associados à família ${res.familia_id}.`, false);
+            await carregarListaAlunos();
+        } catch (err) {
+            showMsg(feedback, `Erro: ${err.message}`, true);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Associar Irmãos';
+        }
+    });
+
+    $('refreshStudents').addEventListener('click', () => carregarListaAlunos().catch(err => showMsg($('studentFeedback'), err.message, true)));
+
+    const studentsObserver = new MutationObserver(() => {
+        if ($('view-students').classList.contains('active')) carregarListaAlunos().catch(() => {});
+    });
+    studentsObserver.observe($('view-students'), { attributes: true, attributeFilter: ['class'] });
+
+
     // ==============================================
     $('connectButton').addEventListener('click', async () => {
         const token = $('adminToken').value.trim();

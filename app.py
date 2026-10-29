@@ -244,7 +244,130 @@ def historico_admin():
     return jsonify(dados)
 
 
-# Registrar Blueprint
+@admin_bp.route("/api/alunos/cadastrar", methods=["POST"])
+@tratar_erro_api
+def cadastrar_aluno():
+    auth = validar_admin()
+    if auth: return auth
+
+    dados = request.get_json() or {}
+    erros = validar_campos(dados, {
+        "matricula": {"obrigatorio": True, "min": 1, "max": 40},
+        "nome_completo": {"obrigatorio": True, "min": 3, "max": 160},
+    })
+    if erros:
+        return jsonify({"detail": erros[0]}), 422
+
+    corpo = {
+        "matricula": dados["matricula"].strip(),
+        "nome_completo": dados["nome_completo"].strip(),
+        "ativo": bool(dados.get("ativo", True)),
+    }
+    if dados.get("familia_id") not in (None, ""):
+        try:
+            corpo["familia_id"] = int(dados["familia_id"])
+        except (ValueError, TypeError):
+            return jsonify({"detail": "familia_id deve ser um numero inteiro."}), 422
+
+    resposta = _api_post("/alunos/cadastrar", corpo)
+    return jsonify(resposta)
+
+
+@admin_bp.route("/api/alunos/importar", methods=["POST"])
+@tratar_erro_api
+def importar_alunos():
+    auth = validar_admin()
+    if auth: return auth
+
+    dados = request.get_json() or {}
+    alunos = dados.get("alunos")
+    if not isinstance(alunos, list) or not alunos:
+        return jsonify({"detail": "Informe uma lista nao vazia em 'alunos'."}), 422
+
+    corpo = {"alunos": alunos}
+    resposta = _api_post("/alunos/importar", corpo)
+    return jsonify(resposta)
+
+
+@admin_bp.route("/api/alunos/atualizar", methods=["POST"])
+@tratar_erro_api
+def atualizar_aluno():
+    auth = validar_admin()
+    if auth: return auth
+
+    dados = request.get_json() or {}
+    matricula = str(dados.get("matricula", "")).strip()
+    nome_completo = str(dados.get("nome_completo", "")).strip()
+    if not matricula or not nome_completo:
+        return jsonify({"detail": "matricula e nome_completo sao obrigatorios."}), 422
+
+    corpo_item = {
+        "matricula": matricula,
+        "nome_completo": nome_completo,
+        "ativo": bool(dados.get("ativo", True)),
+    }
+    if dados.get("familia_id") not in (None, ""):
+        try:
+            corpo_item["familia_id"] = int(dados["familia_id"])
+        except (ValueError, TypeError):
+            return jsonify({"detail": "familia_id deve ser um numero inteiro."}), 422
+    else:
+        corpo_item["familia_id"] = None
+
+    resposta = _api_post("/alunos/importar", {"alunos": [corpo_item]})
+    return jsonify(resposta)
+
+
+@admin_bp.route("/api/alunos/associar-irmaos", methods=["POST"])
+@tratar_erro_api
+def associar_irmaos():
+    auth = validar_admin()
+    if auth: return auth
+
+    dados = request.get_json() or {}
+    matriculas = dados.get("matriculas")
+    if not isinstance(matriculas, list) or not matriculas:
+        return jsonify({"detail": "Informe uma lista nao vazia de matriculas."}), 422
+    matriculas = [str(m).strip() for m in matriculas if str(m).strip()]
+    if not matriculas:
+        return jsonify({"detail": "Informe uma lista nao vazia de matriculas."}), 422
+
+    familia_id = dados.get("familia_id")
+    if familia_id in (None, ""):
+        try:
+            existentes = _api_get("/admin/api/alunos")
+            lista = existentes.get("alunos", []) if isinstance(existentes, dict) else existentes
+            ids = [a.get("familia_id") for a in lista if isinstance(a, dict) and a.get("familia_id") is not None]
+            familia_id = (max(ids) + 1) if ids else 1
+        except Exception:
+            familia_id = 1
+    else:
+        try:
+            familia_id = int(familia_id)
+        except (ValueError, TypeError):
+            return jsonify({"detail": "familia_id deve ser um numero inteiro."}), 422
+
+    try:
+        existentes = _api_get("/admin/api/alunos")
+        lista = existentes.get("alunos", []) if isinstance(existentes, dict) else existentes
+    except Exception:
+        lista = []
+    mapa = {str(a.get("matricula")).strip(): a for a in lista if isinstance(a, dict)}
+
+    alunos_payload = []
+    for m in matriculas:
+        a = mapa.get(m, {})
+        alunos_payload.append({
+            "matricula": m,
+            "nome_completo": a.get("nome_completo") or m,
+            "ativo": a.get("ativo", True) if a.get("ativo") is not None else True,
+            "familia_id": familia_id,
+        })
+
+    resposta = _api_post("/alunos/importar", {"alunos": alunos_payload})
+    return jsonify({"familia_id": familia_id, "matriculas": matriculas, "resultado": resposta})
+
+
 app.register_blueprint(admin_bp)
 
 
