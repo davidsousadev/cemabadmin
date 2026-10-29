@@ -12,7 +12,7 @@ from flask import Flask, Blueprint, request, jsonify, render_template
 # ====================== CONFIGURAÇÕES ======================
 ALUNOS_ADMIN_TOKEN = config("ALUNOS_ADMIN_TOKEN", default="").strip()
 FUSO = ZoneInfo(config("FUSO_HORARIO", default="America/Fortaleza"))
-API_BASE_URL = config("API_BASE_URL", default="").rstrip("/")
+API_BASE_URL = config("API_BASE_URL", default="https://apicemab.vercel.app").rstrip("/")
 
 TEMPO_TIMEOUT = 30  # segundos
 # ===========================================================
