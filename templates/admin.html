@@ -52,6 +52,9 @@
                 <button class="nav-btn" data-view="students">
                     <span class="ico">🎓</span> Alunos
                 </button>
+                <button class="nav-btn" data-view="families">
+                    <span class="ico">👨‍👩‍👧</span> Famílias
+                </button>
                 <button class="nav-btn" data-view="history">
                     <span class="ico">▤</span> Histórico
                 </button>
@@ -232,10 +235,13 @@
                                 </select>
                             </div>
                             <div class="field" id="studentSelectWrap" hidden>
-                                <label for="studentSelect">Aluno</label>
-                                <select id="studentSelect">
-                                    <option value="">Selecione...</option>
-                                </select>
+                                <label for="studentSelect">Aluno(s)</label>
+                                <input id="customStudentSearch" placeholder="Buscar aluno por nome ou matrícula..." style="margin-bottom:8px">
+                                <select id="studentSelect" multiple size="8" style="height:auto"></select>
+                                <div class="actions" style="margin-top:8px">
+                                    <button class="btn btn-light" id="selectAllFilteredStudents" type="button">Selecionar todos filtrados</button>
+                                    <button class="btn btn-light" id="clearSelectedStudents" type="button">Limpar seleção</button>
+                                </div>
                             </div>
                             <div class="field span-2">
                                 <label for="customTitle">Título</label>
@@ -298,6 +304,11 @@
 
                     <section class="card">
                         <h2>Alunos Cadastrados</h2>
+                        <div class="form-grid" style="margin-bottom:12px">
+                            <div class="field"><label for="filterStudentText">Buscar (nome/matrícula)</label><input id="filterStudentText" placeholder="Digite para filtrar"></div>
+                            <div class="field"><label for="filterStudentFamily">Família (ID)</label><input id="filterStudentFamily" type="number" placeholder="Ex.: 1001"></div>
+                            <div class="field"><label for="filterStudentStatus">Status</label><select id="filterStudentStatus"><option value="">Todos</option><option value="true">Ativos</option><option value="false">Inativos</option></select></div>
+                        </div>
                         <div id="studentsTable" class="table-wrap">
                             <div class="empty">Entre no painel para visualizar os alunos.</div>
                         </div>
@@ -334,10 +345,24 @@
                             <div id="studentFeedback" class="msg" hidden></div>
                         </section>
 
-                        <section class="card">
-                            <h2>Associar Irmãos</h2>
-                            <p class="muted">Selecione os alunos que são irmãos e informe (ou deixe em branco para criar) o ID da família.</p>
-                            <div class="field">
+                    </div>
+                </section>
+
+
+<section class="view" id="view-families">
+                    <div class="view-heading">
+                        <div>
+                            <span class="eyebrow">FAMÍLIAS</span>
+                            <h1>Gestão de Famílias</h1>
+                            <p>Associe alunos como irmãos e gerencie famílias.</p>
+                        </div>
+                        <button class="btn btn-light" id="refreshFamilies">Atualizar</button>
+                    </div>
+                    <section class="card">
+                        <h2>Associar Irmãos</h2>
+                        <p class="muted">Selecione os alunos que são irmãos e informe (ou deixe em branco para criar) o ID da família.</p>
+                        <div class="form-grid">
+                            <div class="field span-2">
                                 <label for="siblingsSelect">Alunos (segure Ctrl para múltiplos)</label>
                                 <select id="siblingsSelect" multiple size="8" style="height:auto"></select>
                             </div>
@@ -345,12 +370,16 @@
                                 <label for="siblingsFamilia">ID da Família (opcional)</label>
                                 <input id="siblingsFamilia" type="number" placeholder="Deixe vazio para gerar automaticamente">
                             </div>
-                            <div class="actions">
-                                <button class="btn" id="associateSiblings">Associar Irmãos</button>
-                            </div>
-                            <div id="siblingsFeedback" class="msg" hidden></div>
-                        </section>
-                    </div>
+                        </div>
+                        <div class="actions">
+                            <button class="btn" id="associateSiblings">Associar Irmãos</button>
+                        </div>
+                        <div id="siblingsFeedback" class="msg" hidden></div>
+                    </section>
+                    <section class="card">
+                        <h2>Famílias Cadastradas</h2>
+                        <div id="familiesTable" class="table-wrap"><div class="empty">Entre no painel para visualizar as famílias.</div></div>
+                    </section>
                 </section>
 
 
